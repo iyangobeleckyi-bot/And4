@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horizontal Dashboard</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: monospace;
+    background: black;
+    color: #00ffcc;
+  }
+
+  .dashboard {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+
+    /* статичний фон */
+    background: url('https://picsum.photos/1920/1080?blur=2') center/cover no-repeat;
+  }
+
+  /* затемнення */
+  .overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+  }
+
+  /* маршрут */
+  .track {
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    width: 80%;
+    height: 4px;
+    background: rgba(255,255,255,0.2);
+    transform: translateY(-50%);
+  }
+
+  /* прогрес */
+  .progress {
+    height: 100%;
+    width: 0%;
+    background: #00ffcc;
+    box-shadow: 0 0 10px #00ffcc;
+  }
+
+  /* маркер */
+  .marker {
+    position: absolute;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #00ffcc;
+    box-shadow: 0 0 15px #00ffcc;
+    transform: translate(-50%, -50%);
+  }
+
+  /* нижній параметр */
+  .bottom {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .param {
+    background: rgba(0,20,15,0.4);
+    padding: 10px 20px;
+    border: 1px solid rgba(0,255,200,0.2);
+    backdrop-filter: blur(8px);
+  }
+
+  .param span {
+    font-size: 12px;
+    opacity: 0.6;
+  }
+
+  .param b {
+    display: block;
+    font-size: 26px;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="dashboard">
+  <div class="overlay"></div>
+
+  <div class="track">
+    <div class="progress" id="progress"></div>
+  </div>
+
+  <div class="marker" id="marker"></div>
+
+  <div class="bottom">
+    <div class="param">
+      <span>DISTANCE</span>
+      <b id="distance">0 km</b>
+    </div>
+  </div>
+</div>
+
+<script>
+  const marker = document.getElementById("marker");
+  const progressBar = document.getElementById("progress");
+  const distanceEl = document.getElementById("distance");
+
+  const totalDistance = 1000; // повний шлях
+
+  let current = 0;
+
+  function update() {
+    current += 2; // швидкість руху
+
+    if (current > totalDistance) current = 0;
+
+    const progress = current / totalDistance;
+
+    // позиція
+    const track = document.querySelector(".track");
+    const rect = track.getBoundingClientRect();
+
+    const x = rect.left + rect.width * progress;
+
+    marker.style.left = x + "px";
+
+    // прогрес бар
+    progressBar.style.width = (progress * 100) + "%";
+
+    // текст
+    distanceEl.textContent = current.toFixed(0) + " km";
+  }
+
+  setInterval(update, 30);
+</script>
+
+</body>
+</html>
