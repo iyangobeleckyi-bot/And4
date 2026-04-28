@@ -1,105 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HUD Dashboard</title>
+<title>Map Dashboard FIX</title>
 
-<!-- sci-fi шрифт -->
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
 <style>
   body {
     margin: 0;
     background: black;
-    font-family: 'Orbitron', monospace;
+    font-family: monospace;
     color: #00ffcc;
   }
 
   .dashboard {
-    position: relative;
+    display: flex;
     width: 100vw;
     height: 100vh;
-    overflow: hidden;
-  }
-
-  video {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: brightness(0.6) contrast(1.2);
-  }
-
-  /* затемнення */
-  .dashboard::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at center, transparent 40%, rgba(0,0,0,0.7));
-    z-index: 1;
-  }
-
-  .hud {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
   }
 
   .panel {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    width: 300px;
+    background: rgba(0,20,15,0.95);
+    border-right: 1px solid rgba(0,255,200,0.2);
+    padding: 12px;
+    box-sizing: border-box;
   }
 
-  .left { top: 40px; left: 40px; }
-  .right { top: 40px; right: 40px; }
-
-  .param {
-    position: relative;
-    padding: 12px 16px;
-    min-width: 150px;
-
-    background: rgba(0, 20, 15, 0.4);
-    border: 1px solid rgba(0,255,200,0.2);
-
-    backdrop-filter: blur(10px);
-
-    box-shadow:
-      0 0 10px rgba(0,255,200,0.1),
-      inset 0 0 10px rgba(0,255,200,0.05);
+  .photo {
+    width: 100%;
+    height: 140px;
+    background: url('https://picsum.photos/300/200') center/cover;
+    margin-bottom: 10px;
   }
 
-  .param::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 30%;
-    height: 2px;
-    background: #00ffcc;
-    box-shadow: 0 0 8px #00ffcc;
+  table {
+    width: 100%;
+    border-collapse: collapse;
   }
 
-  .param span {
-    font-size: 11px;
-    opacity: 0.6;
-    letter-spacing: 1px;
-  }
-
-  .param b {
-    display: block;
-    font-size: 28px;
-    font-weight: 600;
-    margin-top: 4px;
-  }
-
-  .param small {
+  td {
+    padding: 6px;
     font-size: 12px;
-    opacity: 0.6;
-    margin-left: 4px;
+  }
+
+  tr {
+    border-bottom: 1px solid rgba(0,255,200,0.1);
+  }
+
+  .ok { color: #00ffcc; }
+  .warn { color: #ffcc00; }
+
+  #map {
+    flex: 1;
+    height: 100vh; /* критично */
   }
 </style>
 </head>
@@ -108,54 +64,59 @@
 
 <div class="dashboard">
 
-  <!-- стабільне відео -->
-  <video autoplay muted loop playsinline>
-    <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4">
-  </video>
-
-  <div class="hud">
-
-    <div class="panel left">
-      <div class="param">
-        <span>SPEED</span>
-        <b id="speed">136.3 <small>km/h</small></b>
-      </div>
-      <div class="param">
-        <span>ALTITUDE</span>
-        <b id="altitude">701.4 <small>m</small></b>
-      </div>
-    </div>
-
-    <div class="panel right">
-      <div class="param">
-        <span>TEMP</span>
-        <b id="temp">26.7 <small>°C</small></b>
-      </div>
-      <div class="param">
-        <span>WIND</span>
-        <b id="wind">16.7 <small>m/s</small></b>
-      </div>
-      <div class="param">
-        <span>BATTERY</span>
-        <b id="battery">73.2 <small>%</small></b>
-      </div>
-    </div>
-
+  <div class="panel">
+    <div class="photo"></div>
+    <table id="table"></table>
   </div>
+
+  <div id="map"></div>
+
 </div>
 
-<script>
-  function rand(min, max) {
-    return (Math.random() * (max - min) + min).toFixed(1);
-  }
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
+<script>
+  // "config.h" прямо тут (бо ти не запускаєш сервер)
+  const CONFIG = [
+    ["Speed", 120, "km/h", "ok"],
+    ["Altitude", 850, "m", "ok"],
+    ["Temp", 32, "°C", "warn"],
+    ["Wind", 18, "m/s", "warn"],
+    ["Battery", 78, "%", "ok"],
+    ["Signal", 60, "%", "warn"],
+    ["Pressure", 101.3, "kPa", "ok"],
+    ["Humidity", 55, "%", "ok"],
+    ["CPU", 72, "%", "warn"],
+    ["Voltage", 11.8, "V", "ok"]
+  ];
+
+  const table = document.getElementById("table");
+
+  CONFIG.forEach(p => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${p[0]}</td>
+      <td class="${p[3]}">${p[1]}</td>
+      <td>${p[2]}</td>
+    `;
+    table.appendChild(row);
+  });
+
+  // карта
+  const map = L.map('map').setView([48.9226, 24.7111], 13);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19
+  }).addTo(map);
+
+  const marker = L.marker([48.9226, 24.7111]).addTo(map);
+
+  // рух
   setInterval(() => {
-    document.getElementById("speed").innerHTML = rand(100,160) + ' <small>km/h</small>';
-    document.getElementById("altitude").innerHTML = rand(600,1200) + ' <small>m</small>';
-    document.getElementById("temp").innerHTML = rand(20,30) + ' <small>°C</small>';
-    document.getElementById("wind").innerHTML = rand(5,20) + ' <small>m/s</small>';
-    document.getElementById("battery").innerHTML = rand(50,100) + ' <small>%</small>';
-  }, 1000);
+    const lat = 48.92 + Math.random() * 0.01;
+    const lng = 24.71 + Math.random() * 0.01;
+    marker.setLatLng([lat, lng]);
+  }, 2000);
 </script>
 
 </body>
